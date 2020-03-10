@@ -1,6 +1,6 @@
+use num_traits::Float;
 use std::iter::{once, repeat};
 use std::ops::*;
-use num_traits::Float;
 
 pub trait ZipAndThen<I, T, F> {
     fn zip_and_then(&mut self, rhs: I, f: F);
@@ -13,9 +13,7 @@ pub struct Vec1<T> {
 
 impl<T> Default for Vec1<T> {
     fn default() -> Self {
-        Vec1 {
-            values: vec![],
-        }
+        Vec1 { values: vec![] }
     }
 }
 
@@ -24,11 +22,11 @@ impl<T> Vec1<T> {
         Vec1 { values: vec![] }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&T> {
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.values.iter()
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item=&mut T> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         self.values.iter_mut()
     }
 
@@ -81,7 +79,7 @@ impl<T: Copy, F: Fn(&mut T, T)> ZipAndThen<T, T, F> for Vec1<T> {
 impl<T: Default> Vec1<T> {
     pub fn default_with_len(len: usize) -> Self {
         Vec1 {
-            values: Vec1::get_vec(len)
+            values: Vec1::get_vec(len),
         }
     }
 
@@ -188,11 +186,11 @@ impl<T> Vec2<T> {
         self.x.len()
     }
 
-    fn iter(&self) -> impl Iterator<Item=&[T]> {
+    fn iter(&self) -> impl Iterator<Item = &[T]> {
         once(self.x.as_slice()).chain(once(self.y.as_slice()))
     }
 
-    fn iter_mut(&mut self) -> impl Iterator<Item=&mut [T]> {
+    fn iter_mut(&mut self) -> impl Iterator<Item = &mut [T]> {
         once(self.x.as_mut_slice()).chain(once(self.y.as_mut_slice()))
     }
 }
@@ -201,15 +199,11 @@ impl<T: Copy, F: Fn(&mut T, T)> ZipAndThen<&Vec2<T>, T, F> for Vec2<T> {
     fn zip_and_then(&mut self, rhs: &Vec2<T>, f: F) {
         debug_assert_eq!(self.len(), rhs.len());
 
-        self.iter_mut()
-            .zip(rhs.iter())
-            .for_each(|(lhs, rhs)| {
-                lhs.iter_mut()
-                    .zip(rhs.iter())
-                    .for_each(|(lhs, rhs)| {
-                        f(lhs, *rhs)
-                    })
-            })
+        self.iter_mut().zip(rhs.iter()).for_each(|(lhs, rhs)| {
+            lhs.iter_mut()
+                .zip(rhs.iter())
+                .for_each(|(lhs, rhs)| f(lhs, *rhs))
+        })
     }
 }
 
@@ -222,9 +216,7 @@ impl<T: Copy, F: Fn(&mut T, T)> ZipAndThen<&Vec1<T>, T, F> for Vec2<T> {
             .for_each(|(lhs, rhs)| {
                 lhs.iter_mut()
                     .zip(rhs.iter())
-                    .for_each(|(lhs, rhs)| {
-                        f(lhs, *rhs)
-                    })
+                    .for_each(|(lhs, rhs)| f(lhs, *rhs))
             })
     }
 }
@@ -232,10 +224,7 @@ impl<T: Copy, F: Fn(&mut T, T)> ZipAndThen<&Vec1<T>, T, F> for Vec2<T> {
 impl<T: Copy, F: Fn(&mut T, T)> ZipAndThen<T, T, F> for Vec2<T> {
     fn zip_and_then(&mut self, rhs: T, f: F) {
         self.iter_mut()
-            .for_each(|values| {
-                values.iter_mut()
-                    .for_each(|v| f(v, rhs))
-            })
+            .for_each(|values| values.iter_mut().for_each(|v| f(v, rhs)))
     }
 }
 

@@ -1,6 +1,7 @@
 use num_traits::Float;
 use std::iter::{once, repeat};
 use std::ops::*;
+use crate::ops::*;
 
 pub trait ZipAndThen<I, T, F> {
     fn zip_and_then(&mut self, rhs: I, f: F);
@@ -162,6 +163,17 @@ impl<T: Copy + DivAssign<T>> DivAssign<T> for Vec1<T> {
     }
 }
 
+impl<'a, T> Mul<&'a Vec1<T>> for &'a Vec2<T> {
+    type Output = VMul<&'a Vec2<T>, &'a Vec1<T>>;
+
+    fn mul(self, rhs: &'a Vec1<T>) -> Self::Output {
+        VMul {
+            a: self,
+            b: rhs,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vec2<T> {
     pub x: Vec1<T>,
@@ -228,6 +240,22 @@ impl<T: Copy, F: Fn(&mut T, T)> ZipAndThen<T, T, F> for Vec2<T> {
     }
 }
 
+impl<T: Copy, F: Fn(&mut T, T, T)> ZipAndThen<VMul<&Vec2<T>, &Vec1<T>>, T, F> for Vec2<T> {
+    fn zip_and_then(&mut self, rhs: VMul<&Vec2<T>, &Vec1<T>>, f: F) {
+        self.iter_mut()
+            .zip(rhs.a.iter())
+            .zip(repeat(rhs.b.as_slice()))
+            .for_each(|((a, b), c)| {
+                a.iter_mut()
+                    .zip(b.iter())
+                    .zip(c.iter())
+                    .for_each(|((a, b), c)| {
+                        f(a, *b, *c)
+                    })
+            })
+    }
+}
+
 impl<T: Default> Vec2<T> {
     pub fn default_with_len(len: usize) -> Self {
         Vec2 {
@@ -240,6 +268,12 @@ impl<T: Default> Vec2<T> {
 impl<T: Float + AddAssign<T>> AddAssign<&Self> for Vec2<T> {
     fn add_assign(&mut self, rhs: &Vec2<T>) {
         self.zip_and_then(rhs, T::add_assign);
+    }
+}
+
+impl<T: Float + AddAssign<T> + Mul<T,Output=T>> AddAssign<VMul<&Vec2<T>, &Vec1<T>>> for Vec2<T> {
+    fn add_assign(&mut self, rhs: VMul<&Vec2<T>, &Vec1<T>>) {
+        self.zip_and_then(rhs, |a, b, c| *a += b * c);
     }
 }
 

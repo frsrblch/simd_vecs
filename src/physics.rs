@@ -24,7 +24,7 @@ where
     VEC1: AddAssign<<&'a VEC2 as Mul<&'a VEC3>>::Output>,
     UNIT2: Mul<UNIT3, Output = UNIT1>,
 {
-    fn add_assign(&mut self, rhs: VMul<'a, Typed<VEC2, UNIT2>, Typed<VEC3, UNIT3>>) {
+    fn add_assign(&mut self, rhs: VMul<Typed<VEC2, UNIT2>, Typed<VEC3, UNIT3>>) {
         self.vec += &rhs.a.vec * &rhs.b.vec;
     }
 }

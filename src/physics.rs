@@ -33,14 +33,12 @@ where
 impl<'a, VEC1, VEC2, VEC3, UNIT1, UNIT2, UNIT3>
 AddAssign<VMul<&'a Typed<VEC2, UNIT2>, &'a Typed<VEC3, UNIT3>>> for Typed<VEC1, UNIT1>
 where
-    VEC1: AddAssign<VMul<&'a VEC2, &'a VEC3>>,
+    VEC1: AddAssign<<&'a VEC2 as Mul<&'a VEC3>>::Output>,
+    &'a VEC2: Mul<&'a VEC3>,
     UNIT2: Mul<UNIT3, Output = UNIT1>,
 {
     fn add_assign(&mut self, rhs: VMul<&'a Typed<VEC2, UNIT2>, &'a Typed<VEC3, UNIT3>>) {
-        self.vec += VMul {
-            a: &rhs.a.vec,
-            b: &rhs.b.vec
-        };
+        self.vec += &rhs.a.vec * &rhs.b.vec;
     }
 }
 

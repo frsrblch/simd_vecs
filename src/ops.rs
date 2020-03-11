@@ -1,5 +1,5 @@
 #[derive(Debug, Copy, Clone)]
-pub struct VMul<A, B> {
-    pub a: A,
-    pub b: B,
+pub struct VMul<'a, A, B> {
+    pub a: &'a A,
+    pub b: &'a B,
 }

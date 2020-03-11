@@ -164,9 +164,20 @@ impl<T: Copy + DivAssign<T>> DivAssign<T> for Vec1<T> {
 }
 
 impl<'a, T> Mul<&'a Vec1<T>> for &'a Vec2<T> {
-    type Output = VMul<&'a Vec2<T>, &'a Vec1<T>>;
+    type Output = VMul<'a, Vec2<T>, Vec1<T>>;
 
     fn mul(self, rhs: &'a Vec1<T>) -> Self::Output {
+        VMul {
+            a: self,
+            b: rhs,
+        }
+    }
+}
+
+impl<'a, T> Mul<&'a T> for &'a Vec2<T> {
+    type Output = VMul<'a, Vec2<T>, T>;
+
+    fn mul(self, rhs: &'a T) -> Self::Output {
         VMul {
             a: self,
             b: rhs,
@@ -240,8 +251,8 @@ impl<T: Copy, F: Fn(&mut T, T)> ZipAndThen<T, T, F> for Vec2<T> {
     }
 }
 
-impl<T: Copy, F: Fn(&mut T, T, T)> ZipAndThen<VMul<&Vec2<T>, &Vec1<T>>, T, F> for Vec2<T> {
-    fn zip_and_then(&mut self, rhs: VMul<&Vec2<T>, &Vec1<T>>, f: F) {
+impl<'a, T: Copy, F: Fn(&mut T, T, T)> ZipAndThen<VMul<'a, Vec2<T>, Vec1<T>>, T, F> for Vec2<T> {
+    fn zip_and_then(&mut self, rhs: VMul<'a, Vec2<T>, Vec1<T>>, f: F) {
         self.iter_mut()
             .zip(rhs.a.iter())
             .zip(repeat(rhs.b.as_slice()))
@@ -249,6 +260,21 @@ impl<T: Copy, F: Fn(&mut T, T, T)> ZipAndThen<VMul<&Vec2<T>, &Vec1<T>>, T, F> fo
                 a.iter_mut()
                     .zip(b.iter())
                     .zip(c.iter())
+                    .for_each(|((a, b), c)| {
+                        f(a, *b, *c)
+                    })
+            })
+    }
+}
+
+impl<'a, T: Copy, F: Fn(&mut T, T, T)> ZipAndThen<VMul<'a, Vec2<T>, T>, T, F> for Vec2<T> {
+    fn zip_and_then(&mut self, rhs: VMul<'a, Vec2<T>, T>, f: F) {
+        self.iter_mut()
+            .zip(rhs.a.iter())
+            .for_each(|(a, b)| {
+                a.iter_mut()
+                    .zip(b.iter())
+                    .zip(repeat(rhs.b))
                     .for_each(|((a, b), c)| {
                         f(a, *b, *c)
                     })
@@ -271,11 +297,18 @@ impl<T: Float + AddAssign<T>> AddAssign<&Self> for Vec2<T> {
     }
 }
 
-impl<T: Float + AddAssign<T> + Mul<T,Output=T>> AddAssign<VMul<&Vec2<T>, &Vec1<T>>> for Vec2<T> {
-    fn add_assign(&mut self, rhs: VMul<&Vec2<T>, &Vec1<T>>) {
+impl<'a, T: Float + AddAssign<T> + Mul<T,Output=T>> AddAssign<VMul<'a, Vec2<T>, Vec1<T>>> for Vec2<T> {
+    fn add_assign(&mut self, rhs: VMul<'a, Vec2<T>, Vec1<T>>) {
         self.zip_and_then(rhs, |a, b, c| *a += b * c);
     }
 }
+
+impl<'a, T: Float + AddAssign<T> + Mul<T,Output=T>> AddAssign<VMul<'a, Vec2<T>, T>> for Vec2<T> {
+    fn add_assign(&mut self, rhs: VMul<'a, Vec2<T>, T>) {
+        self.zip_and_then(rhs, |a, b, c| *a += b * c);
+    }
+}
+
 
 impl<T: Float + SubAssign<T>> SubAssign<&Self> for Vec2<T> {
     fn sub_assign(&mut self, rhs: &Vec2<T>) {

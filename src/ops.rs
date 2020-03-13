@@ -1,24 +1,13 @@
-
-pub trait VecOp<T1, T2> {
-    type Output;
-    fn function(b: T1, c: T2) -> Self::Output;
-}
-
 #[derive(Debug, Copy, Clone)]
 pub struct VMul<'a, A, B> {
     pub a: &'a A,
     pub b: &'a B,
 }
 
-impl<'a, A, B, T1, T2> VecOp<T1, T2> for VMul<'a, A, B>
-where
-    T1: Copy + std::ops::Mul<T2>,
-    T2: Copy,
-{
-    type Output = T1::Output;
-    fn function(a: T1, b: T2) -> Self::Output {
-        a * b
-    }
+#[derive(Debug, Copy, Clone)]
+pub struct VDiv<'a, A, B> {
+    pub a: &'a A,
+    pub b: &'a B,
 }
 
 #[cfg(test)]

@@ -4,6 +4,12 @@ pub struct VMul<'a, A, B> {
     pub b: &'a B,
 }
 
+impl<'a, A, B> VMul<'a, A, B> {
+    pub fn new(a: &'a A, b: &'a B) -> Self {
+        VMul { a, b }
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct VDiv<'a, A, B> {
     pub a: &'a A,

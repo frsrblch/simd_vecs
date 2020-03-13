@@ -1,4 +1,3 @@
-use std::ops::*;
 
 pub trait VecOp<T1, T2> {
     type Output;
@@ -13,7 +12,7 @@ pub struct VMul<'a, A, B> {
 
 impl<'a, A, B, T1, T2> VecOp<T1, T2> for VMul<'a, A, B>
 where
-    T1: Copy + Mul<T2>,
+    T1: Copy + std::ops::Mul<T2>,
     T2: Copy,
 {
     type Output = T1::Output;

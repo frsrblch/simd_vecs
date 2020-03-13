@@ -21,6 +21,12 @@ impl<T> Default for Vec1<T> {
     }
 }
 
+impl<T> From<Vec<T>> for Vec1<T> {
+    fn from(values: Vec<T>) -> Self {
+        Self { values }
+    }
+}
+
 impl<T> Vec1<T> {
     pub fn new() -> Self {
         Vec1 { values: vec![] }
@@ -66,12 +72,6 @@ impl<T> Vec1<T> {
             .zip(rhs.x.iter())
             .zip(rhs.y.iter())
             .for_each(|((v, x), y)| f(v, *x, *y));
-    }
-}
-
-impl<T> From<Vec<T>> for Vec1<T> {
-    fn from(values: Vec<T>) -> Self {
-        Self { values }
     }
 }
 
@@ -303,25 +303,6 @@ impl<T1, T2: Copy, F: Fn(&mut T1, &mut T1, T2)> ZipToBoth<&Vec1<T2>, F> for Vec2
     }
 }
 
-impl<T: Copy + Float, F: Fn(&mut T, T)> ZipToEach<T, F> for Vec2<T> {
-    fn zip_each_and_then(&mut self, rhs: T, f: F) {
-        self.x.iter_mut().for_each(|x| f(x, rhs));
-        self.y.iter_mut().for_each(|x| f(x, rhs));
-    }
-}
-
-impl<'a, T: Copy, F: Fn(&mut T, T, T)> ZipToEach<VMul<'a, Vec2<T>, T>, F> for Vec2<T> {
-    fn zip_each_and_then(&mut self, rhs: VMul<'a, Vec2<T>, T>, f: F) {
-        self.x.iter_mut()
-            .zip(rhs.a.x.iter())
-            .for_each(|(a, b)| f(a, *b, *rhs.b));
-
-        self.y.iter_mut()
-            .zip(rhs.a.y.iter())
-            .for_each(|(a, b)| f(a, *b, *rhs.b));
-    }
-}
-
 impl<'a, T1, T2, T3> AddAssign<VMul<'a, Vec2<T2>, Vec1<T3>>> for Vec2<T1>
     where
         T1: Copy + AddAssign<T1>,
@@ -469,7 +450,7 @@ mod tests {
             values: vec![6.0, 3.0],
         };
 
-        v1.zip_each_and_then(&v2, |v, x, y| *v += (x * x + y * y).sqrt());
+        v1.zip_to_vec2(&v2, |v, x, y| *v += (x * x + y * y).sqrt());
 
         assert_eq!(expected, v1);
     }

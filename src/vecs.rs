@@ -2,14 +2,6 @@ use crate::ops::*;
 use num_traits::Float;
 use std::ops::*;
 
-pub trait ZipToEach<I, F> {
-    fn zip_each_and_then(&mut self, rhs: I, f: F);
-}
-
-pub trait ZipToBoth<I, F> {
-    fn zip_both_and_then(&mut self, rhs: I, f: F);
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vec1<T> {
     pub values: Vec<T>,
@@ -289,17 +281,6 @@ impl<T> Vec2<T> {
             .zip(vec2.y.iter())
             .zip(vec1.iter())
             .for_each(|((((x1, y1), x2), y2), v)| f(x1, y1, *x2, *y2, *v));
-    }
-}
-
-impl<T1, T2: Copy, F: Fn(&mut T1, &mut T1, T2)> ZipToBoth<&Vec1<T2>, F> for Vec2<T1> {
-    fn zip_both_and_then(&mut self, rhs: &Vec1<T2>, f: F) {
-        debug_assert_eq!(self.len(), rhs.len());
-
-        self.x.iter_mut()
-            .zip(self.y.iter_mut())
-            .zip(rhs.iter())
-            .for_each(|((x, y), rhs)| f(x, y, *rhs));
     }
 }
 

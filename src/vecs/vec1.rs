@@ -125,15 +125,9 @@ impl<T: Float + Default> Vec1<T> {
     }
 }
 
-impl<T: Copy + AddAssign<T>> AddAssign<&Self> for Vec1<T> {
-    fn add_assign(&mut self, rhs: &Vec1<T>) {
-        self.zip_to_vec1(rhs, T::add_assign)
-    }
-}
-
-impl<T: Copy + AddAssign<T>> AddAssign<T> for Vec1<T> {
-    fn add_assign(&mut self, rhs: T) {
-        self.zip_to_value(rhs, T::add_assign)
+impl<'a, T1: Copy + AddAssign<T2>, T2: Copy> AddAssign<&'a Vec1<T2>> for Vec1<T1> {
+    fn add_assign(&mut self, rhs: &'a Vec1<T2>) {
+        self.zip_to_vec1(rhs, T1::add_assign)
     }
 }
 
@@ -149,6 +143,24 @@ impl<'a, T1: Copy + AddAssign<T1>, T2: Copy + Mul<T3, Output=T1>, T3: Copy> AddA
     }
 }
 
+impl<'a, T1: Copy + AddAssign<T1>, T2: Copy + Div<T3, Output=T1>, T3: Copy> AddAssign<VDiv<'a, Vec1<T2>, Vec1<T3>>> for Vec1<T1> {
+    fn add_assign(&mut self, rhs: VDiv<'a, Vec1<T2>, Vec1<T3>>) {
+        self.zip_to_vec1_and_vec1(rhs.a, rhs.b, |a, b, c| *a += b / c);
+    }
+}
+
+impl<'a, T1: Copy + AddAssign<T1>, T2: Copy + Div<T3, Output=T1>, T3: Copy> AddAssign<VDiv<'a, Vec1<T2>, T3>> for Vec1<T1> {
+    fn add_assign(&mut self, rhs: VDiv<'a, Vec1<T2>, T3>) {
+        self.zip_to_vec1_and_value(rhs.a, *rhs.b, |a, b, c| *a += b / c);
+    }
+}
+
+impl<'a, T1: Copy + SubAssign<T2>, T2: Copy> SubAssign<&'a Vec1<T2>> for Vec1<T1> {
+    fn sub_assign(&mut self, rhs: &'a Vec1<T2>) {
+        self.zip_to_vec1(rhs, T1::sub_assign)
+    }
+}
+
 impl<'a, T1: Copy + SubAssign<T1>, T2: Copy + Mul<T3, Output=T1>, T3: Copy> SubAssign<VMul<'a, Vec1<T2>, Vec1<T3>>> for Vec1<T1> {
     fn sub_assign(&mut self, rhs: VMul<'a, Vec1<T2>, Vec1<T3>>) {
         self.zip_to_vec1_and_vec1(rhs.a, rhs.b, |a, b, c| *a -= b * c);
@@ -161,15 +173,15 @@ impl<'a, T1: Copy + SubAssign<T1>, T2: Copy + Mul<T3, Output=T1>, T3: Copy> SubA
     }
 }
 
-impl<T: Copy + SubAssign<T>> SubAssign<&Self> for Vec1<T> {
-    fn sub_assign(&mut self, rhs: &Vec1<T>) {
-        self.zip_to_vec1(rhs, T::sub_assign)
+impl<'a, T1: Copy + SubAssign<T1>, T2: Copy + Div<T3, Output=T1>, T3: Copy> SubAssign<VDiv<'a, Vec1<T2>, Vec1<T3>>> for Vec1<T1> {
+    fn sub_assign(&mut self, rhs: VDiv<'a, Vec1<T2>, Vec1<T3>>) {
+        self.zip_to_vec1_and_vec1(rhs.a, rhs.b, |a, b, c| *a -= b / c);
     }
 }
 
-impl<T: Copy + SubAssign<T>> SubAssign<T> for Vec1<T> {
-    fn sub_assign(&mut self, rhs: T) {
-        self.zip_to_value(rhs, T::sub_assign)
+impl<'a, T1: Copy + SubAssign<T1>, T2: Copy + Div<T3, Output=T1>, T3: Copy> SubAssign<VDiv<'a, Vec1<T2>, T3>> for Vec1<T1> {
+    fn sub_assign(&mut self, rhs: VDiv<'a, Vec1<T2>, T3>) {
+        self.zip_to_vec1_and_value(rhs.a, *rhs.b, |a, b, c| *a -= b / c);
     }
 }
 
@@ -202,5 +214,32 @@ impl<'a, T1: Mul<T2>, T2> Mul<&'a Vec1<T2>> for &'a Vec2<T1> {
 
     fn mul(self, rhs: &'a Vec1<T2>) -> Self::Output {
         VMul { a: self, b: rhs }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use physics::*;
+
+    #[test]
+    fn test_all() {
+        let mut p: Vec1<Length> = Vec1 {
+            values: vec![1.0.into(), 2.0.into()],
+        };
+
+        let mut v: Vec1<Speed> = Vec1 {
+            values: vec![2.0.into(), 3.0.into()],
+        };
+
+        let mut t: Vec1<Time> = Vec1 {
+            values: vec![5.0.into(), 4.0.into()],
+        };
+
+        p += VMul::new(&v, &t);
+        v += VDiv::new(&p, &t);
+
+        p -= VMul::new(&v, &t);
+        v -= VDiv::new(&p, &t);
     }
 }

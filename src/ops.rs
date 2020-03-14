@@ -6,7 +6,7 @@ pub struct VMul<'a, A, B> {
 
 impl<'a, A, B> VMul<'a, A, B> {
     pub fn new(a: &'a A, b: &'a B) -> Self {
-        VMul { a, b }
+        Self { a, b }
     }
 }
 
@@ -14,6 +14,12 @@ impl<'a, A, B> VMul<'a, A, B> {
 pub struct VDiv<'a, A, B> {
     pub a: &'a A,
     pub b: &'a B,
+}
+
+impl<'a, A, B> VDiv<'a, A, B> {
+    pub fn new(a: &'a A, b: &'a B) -> Self {
+        Self { a, b }
+    }
 }
 
 #[cfg(test)]

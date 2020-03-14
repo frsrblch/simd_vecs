@@ -49,6 +49,8 @@ impl<T> Vec2<T> {
     }
 
     pub fn zip_to_vec1<T2: Copy, F: Fn(&mut T, T2)>(&mut self, rhs: &Vec1<T2>, f: F) {
+        debug_assert_eq!(self.len(), rhs.len());
+
         self.x.iter_mut()
             .zip(rhs.iter())
             .for_each(|(l, r)| f(l, *r));
@@ -59,6 +61,8 @@ impl<T> Vec2<T> {
     }
 
     pub fn zip_both_to_vec1<T2: Copy, F: Fn(&mut T, &mut T, T2)>(&mut self, rhs: &Vec1<T2>, f: F) {
+        debug_assert_eq!(self.len(), rhs.len());
+
         self.x.iter_mut()
             .zip(self.y.iter_mut())
             .zip(rhs.iter())
@@ -66,6 +70,8 @@ impl<T> Vec2<T> {
     }
 
     pub fn zip_to_vec2<T2: Copy, F: Fn(&mut T, T2)>(&mut self, rhs: &Vec2<T2>, f: F) {
+        debug_assert_eq!(self.len(), rhs.len());
+
         self.x.iter_mut()
             .zip(rhs.x.iter())
             .for_each(|(l, r)| f(l, *r));
@@ -76,6 +82,8 @@ impl<T> Vec2<T> {
     }
 
     pub fn zip_both_to_vec2<T2: Copy, F: Fn(&mut T, &mut T, T2, T2)>(&mut self, rhs: &Vec2<T2>, f: F) {
+        debug_assert_eq!(self.len(), rhs.len());
+
         self.x.iter_mut()
             .zip(self.y.iter_mut())
             .zip(rhs.x.iter())
@@ -84,6 +92,8 @@ impl<T> Vec2<T> {
     }
 
     pub fn zip_to_vec2_and_value<T2: Copy, T3: Copy, F: Fn(&mut T, T2, T3)>(&mut self, vec2: &Vec2<T2>, value: T3, f: F) {
+        debug_assert_eq!(self.len(), vec2.len());
+
         self.x.iter_mut()
             .zip(vec2.x.iter())
             .for_each(|(x1, x2)| f(x1, *x2, value));
@@ -94,6 +104,9 @@ impl<T> Vec2<T> {
     }
 
     pub fn zip_to_vec2_and_vec1<T2: Copy, T3: Copy, F: Fn(&mut T, T2, T3)>(&mut self, vec2: &Vec2<T2>, vec1: &Vec1<T3>, f: F) {
+        debug_assert_eq!(self.len(), vec2.len());
+        debug_assert_eq!(self.len(), vec1.len());
+
         self.x.iter_mut()
             .zip(vec2.x.iter())
             .zip(vec1.iter())
@@ -106,6 +119,8 @@ impl<T> Vec2<T> {
     }
 
     pub fn zip_both_to_vec2_and_value<T2: Copy, T3: Copy, F: Fn(&mut T, &mut T, T2, T2, T3)>(&mut self, vec2: &Vec2<T2>, value: T3, f: F) {
+        debug_assert_eq!(self.len(), vec2.len());
+
         self.x.iter_mut()
             .zip(self.y.iter_mut())
             .zip(vec2.x.iter())
@@ -114,6 +129,9 @@ impl<T> Vec2<T> {
     }
 
     pub fn zip_both_to_vec2_and_vec1<T2: Copy, T3: Copy, F: Fn(&mut T, &mut T, T2, T2, T3)>(&mut self, vec2: &Vec2<T2>, vec1: &Vec1<T3>, f: F) {
+        debug_assert_eq!(self.len(), vec2.len());
+        debug_assert_eq!(self.len(), vec1.len());
+
         self.x.iter_mut()
             .zip(self.y.iter_mut())
             .zip(vec2.x.iter())

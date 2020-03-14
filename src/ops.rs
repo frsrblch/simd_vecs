@@ -24,7 +24,6 @@ impl<'a, A, B> VDiv<'a, A, B> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::vecs::*;
     use physics::*;
 

@@ -29,6 +29,31 @@ impl<T> Vec2<T> {
         Self::default()
     }
 
+    pub fn get(&self, index: usize) -> Option<(&T, &T)> {
+        self.x.get(index)
+            .and_then(|x| self.y.get(index).map(|y| (x, y)))
+    }
+
+    pub fn get_mut(&mut self, index: usize) -> Option<(&mut T, &mut T)> {
+        let x = &mut self.x;
+        let y = &mut self.y;
+
+        x.get_mut(index)
+            .and_then(move |x| y.get_mut(index).map(|y| (x, y)))
+    }
+
+    pub fn insert(&mut self, x_value: T, y_value: T, index: usize) {
+        if let Some((x, y)) = self.get_mut(index) {
+            *x = x_value;
+            *y = y_value;
+        } else {
+            if self.len() == index {
+                self.x.values.push(x_value);
+                self.y.values.push(y_value);
+            }
+        }
+    }
+
     pub fn len(&self) -> usize {
         self.x.len()
     }
@@ -224,5 +249,45 @@ impl<T: Copy + DivAssign<T>> DivAssign<&Vec1<T>> for Vec2<T> {
 impl<T: Copy + DivAssign<T> + 'static> DivAssign<T> for Vec2<T> {
     fn div_assign(&mut self, rhs: T) {
         self.zip_to_value(rhs, T::div_assign);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn insert_at_end() {
+        let mut vec = Vec2::new();
+
+        vec.insert('a', 'b', 0);
+        vec.insert('c', 'd', 1);
+
+        assert_eq!(vec!['a', 'c'], vec.x.values);
+        assert_eq!(vec!['b', 'd'], vec.y.values);
+    }
+
+    #[test]
+    fn insert_beyond_end() {
+        let mut vec = Vec2::new();
+
+        vec.insert('c', 'd', 1);
+
+        assert!(vec.x.values.is_empty());
+        assert!(vec.y.values.is_empty());
+    }
+
+    #[test]
+    fn insert_into_middle() {
+        let mut vec = Vec2::new();
+
+        vec.insert('a', 'b', 0);
+        vec.insert('c', 'd', 1);
+        vec.insert('e', 'f', 2);
+
+        vec.insert('g', 'h', 1);
+
+        assert_eq!(vec!['a', 'g', 'e'], vec.x.values);
+        assert_eq!(vec!['b', 'h', 'f'], vec.y.values);
     }
 }

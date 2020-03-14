@@ -22,6 +22,24 @@ impl<T> Vec1<T> {
         Vec1 { values: vec![] }
     }
 
+    pub fn insert(&mut self, value: T, index: usize) {
+        if let Some(v) = self.values.get_mut(index) {
+            *v = value;
+        } else {
+            if self.len() == index {
+                self.values.push(value);
+            }
+        }
+    }
+
+    pub fn get(&self, index: usize) -> Option<&T> {
+        self.values.get(index)
+    }
+
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
+        self.values.get_mut(index)
+    }
+
     pub fn iter(&self) -> impl Iterator<Item=&T> {
         self.values.iter()
     }
@@ -232,7 +250,7 @@ mod tests {
             values: vec![2.0.into(), 3.0.into()],
         };
 
-        let mut t: Vec1<Time> = Vec1 {
+        let t: Vec1<Time> = Vec1 {
             values: vec![5.0.into(), 4.0.into()],
         };
 
@@ -241,5 +259,56 @@ mod tests {
 
         p -= VMul::new(&v, &t);
         v -= VDiv::new(&p, &t);
+    }
+
+    #[test]
+    fn test_all_value() {
+        let mut p: Vec1<Length> = Vec1 {
+            values: vec![1.0.into(), 2.0.into()],
+        };
+
+        let mut v: Vec1<Speed> = Vec1 {
+            values: vec![2.0.into(), 3.0.into()],
+        };
+
+        let t = Time::in_seconds(5.0);
+
+        p += VMul::new(&v, &t);
+        v += VDiv::new(&p, &t);
+
+        p -= VMul::new(&v, &t);
+        v -= VDiv::new(&p, &t);
+    }
+
+    #[test]
+    fn insert_at_end() {
+        let mut vec = Vec1::new();
+
+        vec.insert('a', 0);
+        vec.insert('b', 1);
+
+        assert_eq!(vec!['a', 'b'], vec.values);
+    }
+
+    #[test]
+    fn insert_beyond_end() {
+        let mut vec = Vec1::new();
+
+        vec.insert('b', 1);
+
+        assert_eq!(Vec::<char>::new(), vec.values);
+    }
+
+    #[test]
+    fn insert_in_middle() {
+        let mut vec = Vec1::new();
+
+        vec.insert('a', 0);
+        vec.insert('b', 1);
+        vec.insert('c', 2);
+
+        vec.insert('d', 1);
+
+        assert_eq!(vec!['a', 'd', 'c'], vec.values);
     }
 }

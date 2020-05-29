@@ -8,4 +8,6 @@ edition = "2018"
 
 [dependencies]
 num-traits = "0.2"
+
+[dev-dependencies]
 physics = { git = "https://github.com/frsrblch/physics" }
